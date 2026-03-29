@@ -1,3 +1,5 @@
+use crate::components::*;
+use crate::server_fns::get_todos;
 use leptos::prelude::*;
 use leptos_meta::{provide_meta_context, MetaTags, Stylesheet, Title};
 use leptos_router::{
@@ -42,11 +44,12 @@ pub fn App() -> impl IntoView {
 
 #[component]
 fn HomePage() -> impl IntoView {
+    let todos = Resource::new(|| (), |_| get_todos());
+
     view! {
         <section class="todoapp">
-            <header class="header">
-                <h1>"todos"</h1>
-            </header>
+            <TodoHeader todos=todos/>
+            <TodoMain todos=todos/>
         </section>
     }
 }

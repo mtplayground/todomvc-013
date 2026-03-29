@@ -1,4 +1,5 @@
 pub mod app;
+pub mod components;
 pub mod db;
 pub mod model;
 pub mod server_fns;
