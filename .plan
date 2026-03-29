@@ -1,0 +1,91 @@
+# TodoMVC - Leptos 0.8 + Axum 0.8 Architecture Plan
+
+## Stack
+- Leptos 0.8 (SSR + WASM hydration via cargo-leptos)
+- Axum 0.8 (HTTP server)
+- SQLx (SQLite, compile-time checked queries)
+- TodoMVC CSS (standard stylesheets)
+
+## File Organization
+
+```
+Cargo.toml              # workspace config + cargo-leptos settings
+rust-toolchain.toml     # Rust toolchain (nightly for Leptos)
+migrations/
+  YYYYMMDD_create_todos.sql
+style/
+  todomvc-app.css       # TodoMVC stylesheets
+  todomvc-common.css
+src/
+  main.rs               # Axum server bootstrap, DB pool, leptos integration
+  lib.rs                # Leptos hydrate entry point (WASM)
+  app.rs                # Root App component, shell layout, stylesheet links
+  db.rs                 # SQLx pool initialization, migration runner
+  model.rs              # Todo struct (Serialize, Deserialize, sqlx::FromRow)
+  server_fns.rs         # Leptos server functions wrapping CRUD queries
+  components/
+    mod.rs
+    todo_input.rs       # Header + new-todo input
+    todo_list.rs        # Main section with todo items
+    todo_item.rs        # Single todo row (checkbox, label, edit, destroy)
+    footer.rs           # Item count, filters, clear-completed
+```
+
+## Shared Types
+
+```rust
+struct Todo {
+    id: i64,
+    title: String,
+    completed: bool,
+    sort_order: i64,
+}
+
+enum Filter { All, Active, Completed }
+```
+
+## Dependency Graph (Issue Order)
+
+```
+#1 Init project
+├── #2 SQLite + migrations
+│   └── #4 Todo model + CRUD
+│       └── #5 Server functions
+│           └── #6 List display + input  (also depends on #3)
+│               ├── #7  Toggle-all
+│               ├── #8  Inline editing
+│               ├── #9  Destroy button
+│               └── #10 Footer + count
+│                   ├── #11 Filtering
+│                   └── #12 Clear completed
+├── #3 CSS + static assets
+└── #13 Integration tests (after #5, #6)
+    └── #14 Spec compliance
+        └── #15 README
+```
+
+## Key Design Decisions
+
+1. **Single crate, not workspace**: Leptos 0.8 with cargo-leptos uses a single crate
+   with `ssr` and `hydrate` features to split server/client code.
+
+2. **SQLx runtime queries**: Use `sqlx::query_as!` where possible, but fall back to
+   `query_as` with runtime strings if compile-time checking is impractical in the
+   Leptos server function context.
+
+3. **Server functions for all mutations**: Every DB operation goes through a Leptos
+   server function (`#[server]`). Components call these; no direct DB access from
+   components.
+
+4. **Reactive resources**: `get_todos` wrapped in a Leptos `Resource`. Mutations
+   call their server fn then `.refetch()` the resource to update the UI.
+
+5. **Client-side filtering via URL hash**: Filter state is derived from the URL
+   hash (`#/`, `#/active`, `#/completed`). Filtering happens in the component
+   (client-side), not as a DB query parameter.
+
+6. **DB pool via Axum state / extract**: The SQLx pool is stored in Axum's app
+   state. Server functions access it via `leptos_axum::extract()`.
+
+7. **TodoMVC CSS served as static assets**: Standard TodoMVC stylesheets placed in
+   `style/` and served by cargo-leptos's built-in static file handling.
