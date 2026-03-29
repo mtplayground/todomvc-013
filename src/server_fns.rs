@@ -82,6 +82,22 @@ pub async fn toggle_all_todos(completed: bool) -> Result<(), ServerFnError> {
 }
 
 #[server]
+pub async fn update_todo_title(id: i64, title: String) -> Result<(), ServerFnError> {
+    use crate::model::queries;
+
+    let pool = leptos_axum::extract::<axum::Extension<sqlx::SqlitePool>>()
+        .await
+        .map(|ext| ext.0)
+        .map_err(|e| ServerFnError::new(format!("Failed to get database pool: {e}")))?;
+
+    queries::update_title(&pool, id, &title)
+        .await
+        .map_err(|e| ServerFnError::new(format!("Failed to update todo title: {e}")))?;
+
+    Ok(())
+}
+
+#[server]
 pub async fn clear_completed() -> Result<(), ServerFnError> {
     use crate::model::queries;
 
