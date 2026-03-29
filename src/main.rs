@@ -6,6 +6,11 @@ async fn main() {
     use leptos::prelude::*;
     use leptos_axum::{generate_route_list, LeptosRoutes};
     use todomvc_leptos::app::*;
+    use todomvc_leptos::db;
+
+    let pool = db::init_pool()
+        .await
+        .expect("Failed to initialize database");
 
     let conf = get_configuration(None).expect("Failed to load Leptos configuration");
     let leptos_options = conf.leptos_options;
@@ -18,6 +23,7 @@ async fn main() {
             move || shell(leptos_options.clone())
         })
         .fallback(leptos_axum::file_and_error_handler(shell))
+        .layer(axum::Extension(pool))
         .with_state(leptos_options);
 
     log!("listening on http://{}", &addr);
