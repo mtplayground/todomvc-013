@@ -50,6 +50,7 @@ fn HomePage() -> impl IntoView {
         <section class="todoapp">
             <TodoHeader todos=todos/>
             <TodoMain todos=todos/>
+            <TodoFooter todos=todos/>
         </section>
     }
 }
