@@ -63,5 +63,10 @@ fn HomePage() -> impl IntoView {
             <TodoMain todos=todos filter=filter/>
             <TodoFooter todos=todos filter=filter/>
         </section>
+        <footer class="info">
+            <p>"Double-click to edit a todo"</p>
+            <p>"Created with "<a href="https://leptos.dev">"Leptos"</a></p>
+            <p>"Part of "<a href="https://todomvc.com">"TodoMVC"</a></p>
+        </footer>
     }
 }

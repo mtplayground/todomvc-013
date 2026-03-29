@@ -10,7 +10,12 @@ pub async fn add_todo(title: String) -> Result<Todo, ServerFnError> {
         .map(|ext| ext.0)
         .map_err(|e| ServerFnError::new(format!("Failed to get database pool: {e}")))?;
 
-    let todo = queries::insert(&pool, &title)
+    let title = title.trim();
+    if title.is_empty() {
+        return Err(ServerFnError::new("Title cannot be empty"));
+    }
+
+    let todo = queries::insert(&pool, title)
         .await
         .map_err(|e| ServerFnError::new(format!("Failed to add todo: {e}")))?;
 
@@ -90,7 +95,12 @@ pub async fn update_todo_title(id: i64, title: String) -> Result<(), ServerFnErr
         .map(|ext| ext.0)
         .map_err(|e| ServerFnError::new(format!("Failed to get database pool: {e}")))?;
 
-    queries::update_title(&pool, id, &title)
+    let title = title.trim();
+    if title.is_empty() {
+        return Err(ServerFnError::new("Title cannot be empty"));
+    }
+
+    queries::update_title(&pool, id, title)
         .await
         .map_err(|e| ServerFnError::new(format!("Failed to update todo title: {e}")))?;
 
