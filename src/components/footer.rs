@@ -1,5 +1,6 @@
 use crate::components::Filter;
 use crate::model::Todo;
+use crate::server_fns::clear_completed;
 use leptos::prelude::*;
 
 #[component]
@@ -19,6 +20,17 @@ pub fn TodoFooter(
     let active_count = Memo::new(move |_| {
         todos_list.get().iter().filter(|t| !t.completed).count()
     });
+
+    let has_completed = Memo::new(move |_| {
+        todos_list.get().iter().any(|t| t.completed)
+    });
+
+    let on_clear_completed = move |_| {
+        leptos::task::spawn_local(async move {
+            let _ = clear_completed().await;
+            todos.refetch();
+        });
+    };
 
     view! {
         <Show when=move || has_todos.get()>
@@ -50,6 +62,11 @@ pub fn TodoFooter(
                         >"Completed"</a>
                     </li>
                 </ul>
+                <Show when=move || has_completed.get()>
+                    <button class="clear-completed" on:click=on_clear_completed>
+                        "Clear completed"
+                    </button>
+                </Show>
             </footer>
         </Show>
     }
