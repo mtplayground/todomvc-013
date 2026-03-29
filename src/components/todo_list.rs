@@ -37,25 +37,29 @@ pub fn TodoMain(
         });
     };
 
+    let has_todos = Memo::new(move |_| !todos_list.get().is_empty());
+
     view! {
-        <section class="main">
-            <input
-                id="toggle-all"
-                class="toggle-all"
-                type="checkbox"
-                prop:checked=move || all_completed.get()
-                on:change=on_toggle_all
-            />
-            <label for="toggle-all">"Mark all as complete"</label>
-            <ul class="todo-list">
-                <For
-                    each=move || filtered_todos.get()
-                    key=|todo| todo.id
-                    let:todo
-                >
-                    <TodoItem todo=todo todos=todos/>
-                </For>
-            </ul>
-        </section>
+        <Show when=move || has_todos.get()>
+            <section class="main">
+                <input
+                    id="toggle-all"
+                    class="toggle-all"
+                    type="checkbox"
+                    prop:checked=move || all_completed.get()
+                    on:change=on_toggle_all
+                />
+                <label for="toggle-all">"Mark all as complete"</label>
+                <ul class="todo-list">
+                    <For
+                        each=move || filtered_todos.get()
+                        key=|todo| todo.id
+                        let:todo
+                    >
+                        <TodoItem todo=todo todos=todos/>
+                    </For>
+                </ul>
+            </section>
+        </Show>
     }
 }
