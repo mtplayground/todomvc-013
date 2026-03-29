@@ -1,9 +1,11 @@
+use crate::components::Filter;
 use crate::model::Todo;
 use leptos::prelude::*;
 
 #[component]
 pub fn TodoFooter(
     todos: Resource<Result<Vec<Todo>, ServerFnError>>,
+    filter: RwSignal<Filter>,
 ) -> impl IntoView {
     let todos_list = Memo::new(move |_| {
         todos
@@ -25,6 +27,29 @@ pub fn TodoFooter(
                     <strong>{move || active_count.get()}</strong>
                     {move || if active_count.get() == 1 { " item left" } else { " items left" }}
                 </span>
+                <ul class="filters">
+                    <li>
+                        <a
+                            class:selected=move || filter.get() == Filter::All
+                            href="#/"
+                            on:click=move |_| filter.set(Filter::All)
+                        >"All"</a>
+                    </li>
+                    <li>
+                        <a
+                            class:selected=move || filter.get() == Filter::Active
+                            href="#/active"
+                            on:click=move |_| filter.set(Filter::Active)
+                        >"Active"</a>
+                    </li>
+                    <li>
+                        <a
+                            class:selected=move || filter.get() == Filter::Completed
+                            href="#/completed"
+                            on:click=move |_| filter.set(Filter::Completed)
+                        >"Completed"</a>
+                    </li>
+                </ul>
             </footer>
         </Show>
     }

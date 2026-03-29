@@ -45,12 +45,23 @@ pub fn App() -> impl IntoView {
 #[component]
 fn HomePage() -> impl IntoView {
     let todos = Resource::new(|| (), |_| get_todos());
+    let filter = RwSignal::new(Filter::All);
+
+    // Read initial hash on the client
+    #[cfg(feature = "hydrate")]
+    {
+        if let Some(window) = web_sys::window() {
+            if let Ok(hash) = window.location().hash() {
+                filter.set(Filter::from_hash(&hash));
+            }
+        }
+    }
 
     view! {
         <section class="todoapp">
             <TodoHeader todos=todos/>
-            <TodoMain todos=todos/>
-            <TodoFooter todos=todos/>
+            <TodoMain todos=todos filter=filter/>
+            <TodoFooter todos=todos filter=filter/>
         </section>
     }
 }

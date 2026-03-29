@@ -1,4 +1,4 @@
-use crate::components::TodoItem;
+use crate::components::{Filter, TodoItem};
 use crate::model::Todo;
 use crate::server_fns::toggle_all_todos;
 use leptos::prelude::*;
@@ -6,6 +6,7 @@ use leptos::prelude::*;
 #[component]
 pub fn TodoMain(
     todos: Resource<Result<Vec<Todo>, ServerFnError>>,
+    filter: RwSignal<Filter>,
 ) -> impl IntoView {
     let todos_list = Memo::new(move |_| {
         todos
@@ -17,6 +18,15 @@ pub fn TodoMain(
     let all_completed = Memo::new(move |_| {
         let list = todos_list.get();
         !list.is_empty() && list.iter().all(|t| t.completed)
+    });
+
+    let filtered_todos = Memo::new(move |_| {
+        let list = todos_list.get();
+        match filter.get() {
+            Filter::All => list,
+            Filter::Active => list.into_iter().filter(|t| !t.completed).collect(),
+            Filter::Completed => list.into_iter().filter(|t| t.completed).collect(),
+        }
     });
 
     let on_toggle_all = move |_| {
@@ -39,7 +49,7 @@ pub fn TodoMain(
             <label for="toggle-all">"Mark all as complete"</label>
             <ul class="todo-list">
                 <For
-                    each=move || todos_list.get()
+                    each=move || filtered_todos.get()
                     key=|todo| todo.id
                     let:todo
                 >
