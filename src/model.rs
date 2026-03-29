@@ -86,6 +86,16 @@ pub mod queries {
         Ok(())
     }
 
+    pub async fn update_title(pool: &SqlitePool, id: i64, title: &str) -> Result<bool, sqlx::Error> {
+        let rows = sqlx::query("UPDATE todos SET title = ? WHERE id = ?")
+            .bind(title)
+            .bind(id)
+            .execute(pool)
+            .await?
+            .rows_affected();
+        Ok(rows > 0)
+    }
+
     pub async fn clear_completed(pool: &SqlitePool) -> Result<u64, sqlx::Error> {
         let rows = sqlx::query("DELETE FROM todos WHERE completed = 1")
             .execute(pool)
