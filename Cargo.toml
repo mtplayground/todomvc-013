@@ -42,6 +42,10 @@ ssr = [
     "leptos_router/ssr",
 ]
 
+[dev-dependencies]
+tokio = { version = "1", features = ["rt-multi-thread", "macros"] }
+sqlx = { version = "0.8", features = ["runtime-tokio", "sqlite", "migrate"] }
+
 [profile.release]
 opt-level = 3
 
